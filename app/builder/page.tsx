@@ -11,8 +11,9 @@ import {
   MarkerType,
   useReactFlow,
   getOutgoers,
+  reconnectEdge,
 } from "@xyflow/react";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 
 import "@xyflow/react/dist/style.css";
 import TestNode from "./TestNode";
@@ -30,6 +31,7 @@ const initialNodes = [
 ];
 
 function Flow() {
+  const edgeReconnectSuccessful = useRef(true);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   //const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -39,6 +41,27 @@ function Flow() {
     (params: any) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
   );
+
+  const onReconnectStart = useCallback(() => {
+    edgeReconnectSuccessful.current = false;
+  }, []);
+
+  const onReconnect = useCallback((oldEdge: any, newConnection: any) => {
+    edgeReconnectSuccessful.current = true;
+    setEdges((els) => reconnectEdge(oldEdge, newConnection, els));
+  }, []);
+
+  interface Edge {
+    id: string;
+  }
+
+  const onReconnectEnd = useCallback((_: any, edge: Edge) => {
+    if (!edgeReconnectSuccessful.current) {
+      setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+    }
+
+    edgeReconnectSuccessful.current = true;
+  }, []);
 
   const { getNodes, getEdges } = useReactFlow();
 
@@ -75,10 +98,13 @@ function Flow() {
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        onConnect={onConnect}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onReconnect={onReconnect}
+        onReconnectStart={onReconnectStart}
+        onReconnectEnd={onReconnectEnd}
         isValidConnection={isValidConnection}
-        onConnect={onConnect}
         fitView
         minZoom={0.1}
         nodeTypes={nodeTypes}

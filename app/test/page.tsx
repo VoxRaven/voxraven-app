@@ -67,14 +67,13 @@ const initialNodes = [
 
 const initialEdges: Edge[] = [
   { id: "e1-2", source: "1", target: "2", animated: true },
-//   { id: "e2-1", source: "2", target: "1", animated: true },
+  //   { id: "e2-1", source: "2", target: "1", animated: true },
 ];
 
 const FlowChart: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [inputValue, setInputValue] = useState(0);
-  const [compute, setCompute] = useState(false);
 
   const updateNodeData = useCallback(
     (nodeId: string, newData: NodeData) => {
@@ -97,7 +96,6 @@ const FlowChart: React.FC = () => {
   );
 
   const propagateOutput = (sourceId: string, outputValue: number) => {
-    console.log("propagating output", sourceId, outputValue);
     const outgoingEdges = edges.filter((edge) => edge.source === sourceId);
     setNodes((nds) =>
       nds.map((node) => {
@@ -128,8 +126,6 @@ const FlowChart: React.FC = () => {
   };
 
   const handleCompute = () => {
-    setCompute(!compute);
-    console.log("Compute set to ", compute);
     updateNodeData("1", { ...nodes[0].data, input: inputValue });
   };
 
