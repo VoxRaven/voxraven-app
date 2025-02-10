@@ -23,6 +23,78 @@ interface TestNodeProps {
   isConnectable: boolean;
 }
 
+const NodeHeader = () => {
+  return (
+    <div className="border-b border-black flex items-center h-14">
+      <div className="ml-2">
+        <Avatar className="m-2 w-7 h-7">
+          <AvatarImage src="https://github.com/shadcn.png" />
+          <AvatarFallback>CN</AvatarFallback>
+        </Avatar>
+      </div>
+      <div className="mr-4 font-bold text-md">Custom AI Component</div>
+    </div>
+  );
+};
+
+interface NodeBodyProps {
+  inputHandles: string[];
+  outputHandles: string[];
+}
+
+const NodeBody = ({ inputHandles, outputHandles }: NodeBodyProps) => {
+  return (
+    <div className="flex flex-col gap-2 py-2 px-2 text-xs">
+      {inputHandles.map((item, index) => (
+        <div key={index} className="">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>{item}</TooltipTrigger>
+              <TooltipContent>
+                <p>Handle Type</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      ))}
+
+      <div className="flex flex-col gap-2 mt-2">
+        <div className="font-bold">Credentials</div>
+        <Select>
+          <SelectTrigger className="w-full h-[25px]">
+            <SelectValue placeholder="Please select" className="text-sm" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="light">Light</SelectItem>
+            <SelectItem value="dark">Dark</SelectItem>
+            <SelectItem value="system">System</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex flex-col gap-2 mt-2">
+        <div className="font-bold">Credentials</div>
+        <Input className="w-full h-[25px]" type="email" placeholder="Email" />
+      </div>
+
+      <div className="mt-2 gap-2 flex flex-col">
+        {outputHandles.map((item, index) => (
+          <div key={index} className="text-end">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>{item}</TooltipTrigger>
+                <TooltipContent>
+                  <p>Handle Type</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default memo(({ data, isConnectable }: TestNodeProps) => {
   const handleStyle = { top: 10 };
   const inputHandles = [
@@ -43,59 +115,10 @@ export default memo(({ data, isConnectable }: TestNodeProps) => {
   return (
     <div className="border border-black rounded-lg bg-white">
       {/* Header */}
-      <div className="border-b border-black flex items-center h-14">
-        <div className="ml-2">
-          <Avatar className="m-2 w-7 h-7">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
-        </div>
-        <div className="mr-4 font-bold text-md">Custom AI Component</div>
-      </div>
+      <NodeHeader />
 
-      <div className="flex flex-col gap-2 py-2 px-2 text-xs">
-        {inputHandles.map((item, index) => (
-          <div key={index} className="">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>{item}</TooltipTrigger>
-                <TooltipContent>
-                  <p>Add to library</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        ))}
+      <NodeBody inputHandles={inputHandles} outputHandles={outputHandles} />
 
-        <div className="flex flex-col gap-2 mt-2">
-          <div className="font-bold">Credentials</div>
-          <Select>
-            <SelectTrigger className="w-full h-[25px]">
-              <SelectValue placeholder="Please select" className="text-sm" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex flex-col gap-2 mt-2">
-          <div className="font-bold">Credentials</div>
-          <Input className="w-full h-[25px]" type="email" placeholder="Email" />
-        </div>
-
-        <div className="mt-2 gap-2 flex flex-col">
-          {outputHandles.map((item, index) => (
-            <div key={index} className="text-end">
-              {item}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Handles */}
       {inputHandles.map((item, index) => (
         <CustomHandle
           type="target"
@@ -110,7 +133,6 @@ export default memo(({ data, isConnectable }: TestNodeProps) => {
           }}
           id={componentUuid + index}
           key={index}
-          isConnectable={true}
           connectionCount={1}
         />
       ))}
