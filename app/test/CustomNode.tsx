@@ -17,6 +17,7 @@ interface CustomNodeProps {
   id: string;
   data: NodeData;
   selected: boolean;
+  isConnectable?: boolean;
 }
 
 export const CustomNode: React.FC<CustomNodeProps> = ({

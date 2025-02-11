@@ -16,24 +16,28 @@ import {
 import { useCallback, useRef } from "react";
 
 import "@xyflow/react/dist/style.css";
-import TestNode from "./TestNode";
+import LLMNode from "./LLMNode";
+import PromptNode from "./PromptNode";
+import { Button } from "@/components/ui/button";
 
-const initialEdges: any[] = [];
+const initialEdges: any[] = [
+  { id: "e1-2", source: "1", target: "2", type: "default" },
+];
 
 const initialNodes = [
-  { id: "1", position: { x: 0, y: 0 }, data: { label: "1" }, type: "testNode" },
+  { id: "1", position: { x: 0, y: 0 }, data: { label: "1" }, type: "llmNode" },
   {
     id: "2",
-    data: { label: "World" },
+    data: {},
     position: { x: 400, y: 400 },
-    type: "testNode",
+    type: "promptNode",
   },
 ];
 
 function Flow() {
   const edgeReconnectSuccessful = useRef(true);
+  const { updateNodeData } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  //const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
@@ -91,10 +95,17 @@ function Flow() {
     [getNodes, getEdges]
   );
 
-  const nodeTypes = { testNode: TestNode };
+  const nodeTypes = { llmNode: LLMNode, promptNode: PromptNode };
+
+  const start = () => {
+    updateNodeData("1", { input: 3 });
+  };
 
   return (
     <div className="h-full border border-slate-150 rounded-md">
+      <Button variant="outline" onClick={start}>
+        Start Computation
+      </Button>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -115,7 +126,7 @@ function Flow() {
             height: 10,
             color: "#0a7ffc",
           },
-          label: "is working",
+          animated: true,
           style: {
             strokeWidth: 2,
             stroke: "#0a7ffc",

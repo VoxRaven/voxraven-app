@@ -1,14 +1,12 @@
-import React, { memo } from "react";
-import { Handle, Position } from "@xyflow/react";
+import React, { memo, useEffect, useState } from "react";
+import {
+  Handle,
+  Position,
+  useNodeConnections,
+  useReactFlow,
+} from "@xyflow/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
@@ -18,7 +16,11 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import CustomHandle from "./CustomHandle";
 
+import { ChatOpenAI } from "@langchain/openai";
+import { AIMessage } from "@langchain/core/messages";
+
 interface TestNodeProps {
+  id: string;
   data: any;
   isConnectable: boolean;
 }
@@ -32,17 +34,26 @@ const NodeHeader = () => {
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       </div>
-      <div className="mr-4 font-bold text-md">Custom AI Component</div>
+      <div className="mr-4 font-bold text-md">Prompt output</div>
     </div>
   );
 };
 
 interface NodeBodyProps {
+  id: string;
+  data: any;
   inputHandles: string[];
   outputHandles: string[];
 }
 
-const NodeBody = ({ inputHandles, outputHandles }: NodeBodyProps) => {
+const NodeBody = ({ id, data, inputHandles, outputHandles }: NodeBodyProps) => {
+  const [modelOutput, setModelOutput] = useState<any>();
+
+  useEffect(() => {
+    console.log(data);
+    setModelOutput(data.content);
+  }, [data]);
+
   return (
     <div className="flex flex-col gap-2 py-2 px-2 text-xs">
       {inputHandles.map((item, index) => (
@@ -59,22 +70,9 @@ const NodeBody = ({ inputHandles, outputHandles }: NodeBodyProps) => {
       ))}
 
       <div className="flex flex-col gap-2 mt-2">
-        <div className="font-bold">Credentials</div>
-        <Select>
-          <SelectTrigger className="w-full h-[25px]">
-            <SelectValue placeholder="Please select" className="text-sm" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="light">Light</SelectItem>
-            <SelectItem value="dark">Dark</SelectItem>
-            <SelectItem value="system">System</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex flex-col gap-2 mt-2">
-        <div className="font-bold">Credentials</div>
-        <Input className="w-full h-[25px]" type="email" placeholder="Email" />
+        <div className="flex items-center">
+          <div className="text-sm">{modelOutput}</div>
+        </div>
       </div>
 
       <div className="mt-2 gap-2 flex flex-col">
@@ -84,7 +82,7 @@ const NodeBody = ({ inputHandles, outputHandles }: NodeBodyProps) => {
               <Tooltip>
                 <TooltipTrigger>{item}</TooltipTrigger>
                 <TooltipContent>
-                  <p>Handle Type</p>
+                  <p>Prompt Test</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -95,30 +93,27 @@ const NodeBody = ({ inputHandles, outputHandles }: NodeBodyProps) => {
   );
 };
 
-export default memo(({ data, isConnectable }: TestNodeProps) => {
+export default memo(({ id, data, isConnectable }: TestNodeProps) => {
   const handleStyle = { top: 10 };
-  const inputHandles = [
-    "Item 1",
-    "Item 2",
-    "Item 3",
-    "Item 4",
-    "Item 5",
-    "Item 6",
-  ];
-  const outputHandles = ["Item 1", "Item 2", "Item 3", "Item 4"];
+  const inputHandles: string[] = ["LLM"];
+  const outputHandles: string[] = [];
   const [componentUuid, setComponentUuid] = React.useState<string>("");
-  
 
   React.useEffect(() => {
     setComponentUuid(uuidv4());
   }, []);
 
   return (
-    <div className="border border-black rounded-lg bg-white">
+    <div className="border border-black rounded-lg bg-white max-w-64">
       {/* Header */}
       <NodeHeader />
 
-      <NodeBody inputHandles={inputHandles} outputHandles={outputHandles} />
+      <NodeBody
+        id={id}
+        data={data}
+        inputHandles={inputHandles}
+        outputHandles={outputHandles}
+      />
 
       {inputHandles.map((item, index) => (
         <CustomHandle
@@ -147,7 +142,7 @@ export default memo(({ data, isConnectable }: TestNodeProps) => {
             borderColor: "#888888",
             padding: "3px",
             background: "#FFF",
-            top: 211 + 24 * (inputHandles.length + index),
+            top: 147 + 24 * (inputHandles.length + index),
           }}
           id={componentUuid + index}
           key={index}
