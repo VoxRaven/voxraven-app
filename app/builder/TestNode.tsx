@@ -107,6 +107,7 @@ export default memo(({ data, isConnectable }: TestNodeProps) => {
   ];
   const outputHandles = ["Item 1", "Item 2", "Item 3", "Item 4"];
   const [componentUuid, setComponentUuid] = React.useState<string>("");
+  
 
   React.useEffect(() => {
     setComponentUuid(uuidv4());
