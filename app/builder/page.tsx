@@ -14,12 +14,14 @@ import {
   reconnectEdge,
 } from "@xyflow/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import "@xyflow/react/dist/style.css";
 import LLMNode from "./LLMNode";
 import PromptNode from "./PromptNode";
 import { Button } from "@/components/ui/button";
 import { Play, Save, StarIcon } from "lucide-react";
+import TranscriptionNode from "./TranscriptionNode";
 
 const initialEdges: any[] = [
   { id: "e1-2", source: "1", target: "2", type: "default" },
@@ -32,6 +34,12 @@ const initialNodes = [
     data: {},
     position: { x: 600, y: 100 },
     type: "promptNode",
+  },
+  {
+    id: "3",
+    position: { x: 200, y: 200 },
+    data: { label: "1" },
+    type: "transcriptionNode",
   },
 ];
 
@@ -72,6 +80,10 @@ function Flow() {
   const [isEditedUnsaved, setIsEditedUnsaved] = useState(false);
 
   useEffect(() => {
+    load();
+  }, []);
+
+  useEffect(() => {
     const handleBeforeUnload = (event: {
       preventDefault: () => void;
       returnValue: string;
@@ -105,7 +117,28 @@ function Flow() {
 
   const save = () => {
     console.log("Change saved");
+    localStorage.setItem("nodes", JSON.stringify(nodes));
+    localStorage.setItem("edges", JSON.stringify(edges));
     setIsEditedUnsaved(false);
+
+    toast.success("Success", {
+      description: "Your changes have been saved.",
+      // action: {
+      //   label: "Undo",
+      //   onClick: () => console.log("Undo"),
+      // },
+    });
+  };
+
+  const load = () => {
+    const savedNodes = localStorage.getItem("nodes");
+    const savedEdges = localStorage.getItem("edges");
+
+    if (savedNodes && savedEdges) {
+      setNodes(JSON.parse(savedNodes));
+      setEdges(JSON.parse(savedEdges));
+      setIsEditedUnsaved(false);
+    }
   };
 
   const isValidConnection = useCallback(
@@ -134,7 +167,11 @@ function Flow() {
     [getNodes, getEdges]
   );
 
-  const nodeTypes = { llmNode: LLMNode, promptNode: PromptNode };
+  const nodeTypes = {
+    llmNode: LLMNode,
+    promptNode: PromptNode,
+    transcriptionNode: TranscriptionNode,
+  };
 
   const [events, setEvents] = useState({
     onReconnectStart: false,
