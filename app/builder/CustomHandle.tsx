@@ -3,7 +3,6 @@ import { Handle, useNodeConnections } from "@xyflow/react";
 
 import { HandleProps } from "@xyflow/react";
 
-
 const CustomHandle = (props: HandleProps & { connectionCount: number }) => {
   const connections = useNodeConnections({
     handleType: "target",

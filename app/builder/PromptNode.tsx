@@ -1,12 +1,6 @@
-import React, { memo, useEffect, useState } from "react";
-import {
-  Handle,
-  Position,
-  useNodeConnections,
-  useReactFlow,
-} from "@xyflow/react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
+import React, { memo, useCallback, useEffect, useState } from "react";
+import { Handle, Position } from "@xyflow/react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
@@ -16,8 +10,23 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import CustomHandle from "./CustomHandle";
 
-import { ChatOpenAI } from "@langchain/openai";
-import { AIMessage } from "@langchain/core/messages";
+import { BotMessageSquare } from "lucide-react";
+
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Loader2Icon } from "lucide-react";
+
+interface MarkdownProps {
+  content: string;
+}
+
+const MarkdownRenderer: React.FC<MarkdownProps> = ({ content }) => {
+  return (
+    <div className="prose max-w-none">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+    </div>
+  );
+};
 
 interface TestNodeProps {
   id: string;
@@ -30,8 +39,9 @@ const NodeHeader = () => {
     <div className="border-b border-black flex items-center h-14">
       <div className="ml-2">
         <Avatar className="m-2 w-7 h-7">
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>CN</AvatarFallback>
+          {/* <AvatarImage src="https://github.com/shadcn.png" /> */}
+          <BotMessageSquare />
+          {/* <AvatarFallback>CN</AvatarFallback> */}
         </Avatar>
       </div>
       <div className="mr-4 font-bold text-md">Prompt output</div>
@@ -48,10 +58,18 @@ interface NodeBodyProps {
 
 const NodeBody = ({ id, data, inputHandles, outputHandles }: NodeBodyProps) => {
   const [modelOutput, setModelOutput] = useState<any>();
+  const [isThinking, setIsThinking] = useState<boolean>(false);
 
   useEffect(() => {
     console.log(data);
-    setModelOutput(data.content);
+
+    if ("thinking" in data) {
+      setIsThinking(data.thinking);
+    }
+
+    if ("content" in data) {
+      setModelOutput(data.content);
+    }
   }, [data]);
 
   return (
@@ -60,7 +78,7 @@ const NodeBody = ({ id, data, inputHandles, outputHandles }: NodeBodyProps) => {
         <div key={index} className="">
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger>{item}</TooltipTrigger>
+              <TooltipTrigger className="font-bold">{item}</TooltipTrigger>
               <TooltipContent>
                 <p>Handle Type</p>
               </TooltipContent>
@@ -69,10 +87,16 @@ const NodeBody = ({ id, data, inputHandles, outputHandles }: NodeBodyProps) => {
         </div>
       ))}
 
-      <div className="flex flex-col gap-2 mt-2">
-        <div className="flex items-center">
-          <div className="text-sm">{modelOutput}</div>
-        </div>
+      <div className="mt-2">
+        {!isThinking ? (
+          <div className="text-sm">
+            <MarkdownRenderer content={modelOutput} />
+          </div>
+        ) : (
+          <div className="flex justify-center">
+            <Loader2Icon className="animate-spin h-8 w-8" />
+          </div>
+        )}
       </div>
 
       <div className="mt-2 gap-2 flex flex-col">
@@ -95,13 +119,14 @@ const NodeBody = ({ id, data, inputHandles, outputHandles }: NodeBodyProps) => {
 
 export default memo(({ id, data, isConnectable }: TestNodeProps) => {
   const handleStyle = { top: 10 };
-  const inputHandles: string[] = ["LLM"];
+  const inputHandles: string[] = ["LLM Content"];
   const outputHandles: string[] = [];
   const [componentUuid, setComponentUuid] = React.useState<string>("");
 
   React.useEffect(() => {
     setComponentUuid(uuidv4());
   }, []);
+
 
   return (
     <div className="border border-black rounded-lg bg-white max-w-64">

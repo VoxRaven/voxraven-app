@@ -29,7 +29,7 @@ const NodeHeader = () => {
     <div className="border-b border-black flex items-center h-14">
       <div className="ml-2">
         <Avatar className="m-2 w-7 h-7">
-          <AvatarImage src="https://github.com/shadcn.png" />
+          <AvatarImage src="https://ignos.blog/wp-content/uploads/2024/01/lm-studio-logo.png" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       </div>
@@ -58,7 +58,7 @@ const NodeBody = ({ id, data, inputHandles, outputHandles }: NodeBodyProps) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      fetch(urlEndpoint)
+      fetch(urlEndpoint + "/models")
         .then((response) => {
           if (response.status === 200) {
             setValidEndpoint(true);
@@ -75,24 +75,29 @@ const NodeBody = ({ id, data, inputHandles, outputHandles }: NodeBodyProps) => {
   }, [urlEndpoint]);
 
   useEffect(() => {
-    console.log("LLM Node Invoked");
+    if (data?.start) {
+      console.log("LLM Node Invoked");
+      const model = new ChatOpenAI({
+        temperature: 0,
+        configuration: {
+          baseURL: urlEndpoint,
+          apiKey: "sk_test_123",
+        },
+      });
 
-    const model = new ChatOpenAI({
-      temperature: 0,
-      configuration: {
-        baseURL: urlEndpoint,
-        apiKey: "sk_test_123",
-      },
-    });
+      const invokeModel = async () => {
+        console.log("Sending request to model");
+        updateNodeData(connections[0].target, { thinking: true });
+        const out = await model.invoke(prompt);
+        console.log("Received response from model", out);
+        updateNodeData(connections[0].target, {
+          thinking: false,
+          content: out.content,
+        });
+      };
 
-    const invokeModel = async () => {
-      console.log("Sending request to model");
-      const out = await model.invoke(prompt);
-      console.log("Received response from model", out);
-      updateNodeData(connections[0].target, { content: out.content });
-    };
-
-    invokeModel();
+      invokeModel();
+    }
   }, [data]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,7 +152,7 @@ const NodeBody = ({ id, data, inputHandles, outputHandles }: NodeBodyProps) => {
 
       <div className="mt-2 gap-2 flex flex-col">
         {outputHandles.map((item, index) => (
-          <div key={index} className="text-end">
+          <div key={index} className="text-end font-bold">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>{item}</TooltipTrigger>
@@ -161,6 +166,11 @@ const NodeBody = ({ id, data, inputHandles, outputHandles }: NodeBodyProps) => {
       </div>
     </div>
   );
+};
+
+const isValidConnection = (connection: any) => {
+  console.log(connection);
+  return true;
 };
 
 export default memo(({ id, data, isConnectable }: TestNodeProps) => {
@@ -200,6 +210,7 @@ export default memo(({ id, data, isConnectable }: TestNodeProps) => {
           id={componentUuid + index}
           key={index}
           connectionCount={1}
+          isValidConnection={isValidConnection}
         />
       ))}
 
@@ -212,10 +223,11 @@ export default memo(({ id, data, isConnectable }: TestNodeProps) => {
             borderColor: "#888888",
             padding: "3px",
             background: "#FFF",
-            top: 147 + 24 * (inputHandles.length + index),
+            top: 210 + 24 * (inputHandles.length + index),
           }}
           id={componentUuid + index}
           key={index}
+          isValidConnection={isValidConnection}
         />
       ))}
     </div>

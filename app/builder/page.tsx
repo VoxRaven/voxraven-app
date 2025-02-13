@@ -13,12 +13,13 @@ import {
   getOutgoers,
   reconnectEdge,
 } from "@xyflow/react";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import "@xyflow/react/dist/style.css";
 import LLMNode from "./LLMNode";
 import PromptNode from "./PromptNode";
 import { Button } from "@/components/ui/button";
+import { Play, Save, StarIcon } from "lucide-react";
 
 const initialEdges: any[] = [
   { id: "e1-2", source: "1", target: "2", type: "default" },
@@ -29,7 +30,7 @@ const initialNodes = [
   {
     id: "2",
     data: {},
-    position: { x: 400, y: 400 },
+    position: { x: 600, y: 100 },
     type: "promptNode",
   },
 ];
@@ -68,6 +69,44 @@ function Flow() {
   }, []);
 
   const { getNodes, getEdges } = useReactFlow();
+  const [isEditedUnsaved, setIsEditedUnsaved] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: {
+      preventDefault: () => void;
+      returnValue: string;
+    }) => {
+      if (isEditedUnsaved) {
+        event.preventDefault();
+        event.returnValue = "Are you sure you want to leave?"; // Standard message (ignored in some browsers)
+      }
+    };
+
+    if (isEditedUnsaved) {
+      console.log("Added event listener");
+      window.addEventListener("beforeunload", handleBeforeUnload);
+    } else {
+      console.log("Removed event listener");
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    }
+
+    // Cleanup on component unmount or when `isEditedUnsaved` changes
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isEditedUnsaved]); // Only depend on `isEditedUnsaved`
+
+  useEffect(() => {
+    console.log("Change detected");
+    setIsEditedUnsaved(true);
+    console.log(edges);
+    console.log(nodes);
+  }, [edges, nodes]);
+
+  const save = () => {
+    console.log("Change saved");
+    setIsEditedUnsaved(false);
+  };
 
   const isValidConnection = useCallback(
     (connection: { target: any; source: any }) => {
@@ -97,15 +136,49 @@ function Flow() {
 
   const nodeTypes = { llmNode: LLMNode, promptNode: PromptNode };
 
+  const [events, setEvents] = useState({
+    onReconnectStart: false,
+    onConnectStart: false,
+    onConnect: false,
+    onReconnect: false,
+    onConnectEnd: false,
+    onReconnectEnd: false,
+  });
+
+  const onConnectStart = useCallback((params: any) => {
+    console.log("onConnectStart", params);
+    setEvents((events) => ({
+      ...events,
+      onConnectStart: true,
+      onConnect: false,
+      onReconnect: false,
+      onConnectEnd: false,
+      onReconnectEnd: false,
+    }));
+  }, []);
+
   const start = () => {
-    updateNodeData("1", { input: 3 });
+    updateNodeData("1", { start: true });
   };
 
   return (
     <div className="h-full border border-slate-150 rounded-md">
-      <Button variant="outline" onClick={start}>
-        Start Computation
-      </Button>
+      <div className="absolute z-10 flex flex-row gap-2 p-2 m-2 ">
+        <Button
+          className="rounded-full bg-green-500 hover:bg-green-300 w-20"
+          size="icon"
+          onClick={start}
+        >
+          <Play /> Run
+        </Button>
+        <Button
+          className="rounded-full bg-yellow-500 hover:bg-yellow-300 w-20"
+          size="icon"
+          onClick={save}
+        >
+          <Save /> Save
+        </Button>
+      </div>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -116,6 +189,7 @@ function Flow() {
         onReconnectStart={onReconnectStart}
         onReconnectEnd={onReconnectEnd}
         isValidConnection={isValidConnection}
+        onConnectStart={onConnectStart}
         fitView
         minZoom={0.1}
         nodeTypes={nodeTypes}
