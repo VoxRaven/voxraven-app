@@ -21,7 +21,6 @@ import LLMNode from "./LLMNode";
 import PromptNode from "./PromptNode";
 import { Button } from "@/components/ui/button";
 import { Play, Save, StarIcon } from "lucide-react";
-import TranscriptionNode from "./TranscriptionNode";
 
 const initialEdges: any[] = [
   { id: "e1-2", source: "1", target: "2", type: "default" },
@@ -35,12 +34,7 @@ const initialNodes = [
     position: { x: 600, y: 100 },
     type: "promptNode",
   },
-  {
-    id: "3",
-    position: { x: 200, y: 200 },
-    data: { label: "1" },
-    type: "transcriptionNode",
-  },
+
 ];
 
 function Flow() {
@@ -170,7 +164,6 @@ function Flow() {
   const nodeTypes = {
     llmNode: LLMNode,
     promptNode: PromptNode,
-    transcriptionNode: TranscriptionNode,
   };
 
   const [events, setEvents] = useState({
