@@ -18,7 +18,7 @@ import { toast } from "sonner";
 
 import "@xyflow/react/dist/style.css";
 import LLMNode from "./LLMNode";
-import PromptNode from "./PromptNode";
+import OutputNode from "./OutputNode";
 import { Button } from "@/components/ui/button";
 import { Play, Save, StarIcon } from "lucide-react";
 
@@ -32,7 +32,19 @@ const initialNodes = [
     id: "2",
     data: {},
     position: { x: 600, y: 100 },
-    type: "promptNode",
+    type: "outputNode",
+  },
+  {
+    id: "3",
+    data: {},
+    position: { x: 600, y: 400 },
+    type: "outputNode",
+  },
+  {
+    id: "4",
+    data: {},
+    position: { x: 600, y: 800 },
+    type: "outputNode",
   },
 
 ];
@@ -163,7 +175,7 @@ function Flow() {
 
   const nodeTypes = {
     llmNode: LLMNode,
-    promptNode: PromptNode,
+    outputNode: OutputNode,
   };
 
   const [events, setEvents] = useState({
@@ -226,14 +238,14 @@ function Flow() {
         defaultEdgeOptions={{
           markerEnd: {
             type: MarkerType.ArrowClosed,
-            width: 20,
+            width: 10,
             height: 10,
-            color: "#0a7ffc",
+            color: "#000000",
           },
           animated: true,
           style: {
-            strokeWidth: 2,
-            stroke: "#0a7ffc",
+            strokeWidth: 1,
+            stroke: "#000000",
           },
         }}
       >

@@ -1,9 +1,5 @@
 import React, { memo, useEffect, useState } from "react";
-import {
-  Position,
-  useNodeConnections,
-  useReactFlow,
-} from "@xyflow/react";
+import { Position, useNodeConnections, useReactFlow } from "@xyflow/react";
 import { Input } from "@/components/ui/input";
 
 import NodeHeader from "./components/NodeHeader";
@@ -11,14 +7,9 @@ import NodeHeader from "./components/NodeHeader";
 import { ChatOpenAI } from "@langchain/openai";
 import NodeHandles from "./components/NodeHandles";
 import NodeBody from "./components/NodeBody";
+import { Node, NodeComponentProps } from "./components/Node";
 
-interface NodeProps {
-  id: string;
-  data: any;
-  isConnectable: boolean;
-}
-
-export default memo(({ id, data, isConnectable }: NodeProps) => {
+export default memo(({ id, data, isConnectable }: NodeComponentProps) => {
   const { updateNodeData } = useReactFlow();
   const [urlEndpoint, setUrlEndpoint] = useState("http://localhost:1234/v1");
   const [valideEndpoint, setValidEndpoint] = useState(false);
@@ -69,12 +60,18 @@ export default memo(({ id, data, isConnectable }: NodeProps) => {
 
       const invokeModel = async () => {
         console.log("Sending request to model");
-        updateNodeData(connections[0].target, { thinking: true });
+        connections.forEach((connection) => {
+          updateNodeData(connection.target, { thinking: true });
+        });
+
         const out = await model.invoke(prompt);
         console.log("Received response from model", out);
-        updateNodeData(connections[0].target, {
-          thinking: false,
-          content: out.content,
+
+        connections.forEach((connection) => {
+          updateNodeData(connection.target, {
+            thinking: false,
+            content: out.content,
+          });
         });
       };
 
@@ -87,20 +84,20 @@ export default memo(({ id, data, isConnectable }: NodeProps) => {
   };
 
   return (
-    <div className="border border-black rounded-lg bg-white">
+    <Node>
       <NodeHeader
         title="LM Studio Model"
         imgSrc="https://ignos.blog/wp-content/uploads/2024/01/lm-studio-logo.png"
       />
 
       <NodeBody>
-        <div className="flex flex-col gap-2 mt-2">
+        <div className="flex flex-col gap-1 mt-2">
           <div className="relative">
-            <div className="font-bold">Endpoint</div>
+            <div className="font-bold text-sm">Endpoint</div>
             {valideEndpoint ? (
-              <span className="bottom-3 left-[55px] absolute w-1.5 h-1.5 bg-emerald-500 border border-emerald-300 rounded-full"></span>
+              <span className="bottom-3 left-[63px] absolute w-1.5 h-1.5 bg-emerald-500 border border-emerald-300 rounded-full"></span>
             ) : (
-              <span className="bottom-3 left-[55px] absolute w-1.5 h-1.5 bg-gray-500 border border-gray-300 rounded-full"></span>
+              <span className="bottom-3 left-[63px] absolute w-1.5 h-1.5 bg-gray-500 border border-gray-300 rounded-full"></span>
             )}
           </div>
 
@@ -112,9 +109,9 @@ export default memo(({ id, data, isConnectable }: NodeProps) => {
           />
         </div>
 
-        <div className="flex flex-col gap-2 mt-2">
+        <div className="flex flex-col gap-1 mt-2">
           <div className="flex items-center">
-            <div className="font-bold">Prompt</div>
+            <div className="font-bold text-sm">Prompt</div>
           </div>
 
           <Input
@@ -127,6 +124,6 @@ export default memo(({ id, data, isConnectable }: NodeProps) => {
       </NodeBody>
 
       <NodeHandles handles={outputHandles} />
-    </div>
+    </Node>
   );
 });

@@ -7,6 +7,13 @@ import {
   useNodeConnections,
 } from "@xyflow/react";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 interface NodeHandlesProps {
   handles: Array<CustomHandleProps>;
 }
@@ -24,7 +31,7 @@ const CustomHandle = ({
   type,
   id,
   position,
-  maxConnections = 1,
+  maxConnections = Infinity,
 }: CustomHandleProps) => {
   const connections = useNodeConnections({
     handleType: type as HandleType,
@@ -33,22 +40,31 @@ const CustomHandle = ({
 
   return (
     <div
-      className={`relative ${position === Position.Right ? "text-end" : ""}`}
+      className={`relative my-2 ${
+        position === Position.Right ? "text-end" : ""
+      }`}
     >
-      <span className="mx-2 text-xs italic">{label}</span>
-      <Handle
-        type={type as HandleType}
-        position={position}
-        style={{
-          borderWidth: "1px",
-          borderColor: "#888888",
-          padding: "3px",
-          background: "#FFF",
-          top: 13,
-        }}
-        id={id}
-        isConnectable={connections.length < maxConnections}
-      />
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <span className="mx-2 text-xs italic">{label}</span>
+            <Handle
+              type={type as HandleType}
+              position={position}
+              style={{
+                borderWidth: "1px",
+                borderColor: "#888888",
+                padding: "3px",
+                background: "#FFF",
+                top: 13,
+              }}
+              id={id}
+              isConnectable={connections.length < maxConnections}
+            />
+          </TooltipTrigger>
+          <TooltipContent>Here goes handle data type</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };
