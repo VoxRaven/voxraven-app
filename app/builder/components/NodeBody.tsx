@@ -7,9 +7,10 @@ interface NodeBodyProps {
 // Parent component that accepts children
 const NodeBody: React.FC<NodeBodyProps> = ({ children }) => {
   return (
-    <div className="mx-2 my-4">
-      <div>{children}</div>
-    </div>
+    <>
+       <div className="text-center py-1 bg-slate-100 text-xs">Configuration</div>
+      <div className="mx-2 my-4">{children}</div>
+    </>
   );
 };
 

@@ -7,7 +7,13 @@ import { Loader2Icon } from "lucide-react";
 import { Node, NodeComponentProps } from "./components/Node";
 import NodeHeader from "./components/NodeHeader";
 import NodeBody from "./components/NodeBody";
-import NodeHandles from "./components/NodeHandles";
+import {
+  NodeInputHandles,
+  NodeOutputHandles,
+  NodeOutputHandlesProps,
+  NodeInputHandlesProps,
+} from "./components/NodeHandles";
+import NodeDataTypes from "./components/NodeDataTypes";
 
 interface MarkdownProps {
   content: string;
@@ -21,32 +27,30 @@ const MarkdownRenderer: React.FC<MarkdownProps> = ({ content }) => {
   );
 };
 
-export default memo(({ id, data, isConnectable }: NodeComponentProps) => {
+export default memo(({ id, data }: NodeComponentProps) => {
   const [modelOutput, setModelOutput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+
   const inputHandles = [
     {
       label: "LLM Output",
-      id: "5",
-      position: Position.Left,
-      type: "target",
-      maxConnections: 1,  
+      acceptedType: NodeDataTypes.LLMOutput,
     },
   ];
 
   useEffect(() => {
     setModelOutput(data.content);
-  }, [data.content]);
+  }, [data?.content]);
 
   useEffect(() => {
     setIsThinking(data.thinking);
-  }, [data.thinking]);
+  }, [data?.thinking]);
 
   return (
     <Node>
-      <NodeHeader title="Prompt output" />
+      <NodeHeader title="Prompt output" imgSrc="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4N_soUiGggkq4TxayU7O_echs7FO8ISMD5w&s" />
 
-      <NodeHandles handles={inputHandles} />
+      <NodeInputHandles handles={inputHandles} />
 
       <NodeBody>
         <div className="mt-2">

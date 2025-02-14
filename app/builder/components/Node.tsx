@@ -16,5 +16,4 @@ export const Node: React.FC<NodeProps> = ({ children }) => {
 export interface NodeComponentProps {
   id: string;
   data: any;
-  isConnectable: boolean;
 }

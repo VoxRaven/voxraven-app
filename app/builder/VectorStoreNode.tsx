@@ -9,17 +9,13 @@ import { Input } from "@/components/ui/input";
 
 import NodeHeader from "./components/NodeHeader";
 
-import { ChatOpenAI } from "@langchain/openai";
+import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 
 import NodeBody from "./components/NodeBody";
 import { Node, NodeComponentProps } from "./components/Node";
 import { NodeOutputHandles } from "./components/NodeHandles";
 import NodeDataTypes from "./components/NodeDataTypes";
-
-type LLMOutput = {
-  content?: string;
-  thinking: boolean;
-};
+import { MemoryVectorStore } from "langchain/vectorstores/memory";
 
 export default memo(({ id, data }: NodeComponentProps) => {
   const { updateNodeData, getNode } = useReactFlow();
@@ -29,36 +25,33 @@ export default memo(({ id, data }: NodeComponentProps) => {
 
   const outputHandles = [
     {
-      label: "LLM",
-      outputType: NodeDataTypes.LLM,
+      label: "Vector Store",
+      outputType: NodeDataTypes.VectorStore,
     },
   ];
 
   const LLMOutputConnections = useNodeConnections({
     id: id,
     handleType: "source",
-    handleId: NodeDataTypes.LLM,
+    handleId: NodeDataTypes.VectorStore,
   });
 
   useEffect(() => {
-    propagateLLMModel(LLMOutputConnections);
+    propagateVS(LLMOutputConnections);
   }, [LLMOutputConnections]);
 
-  useEffect(() => {
-    console.log("Model Created");
-  }, [urlEndpoint]);
-
-  const propagateLLMModel = (connections: any) => {
-    const model = new ChatOpenAI({
-      temperature: 0,
-      configuration: {
-        baseURL: urlEndpoint,
-        apiKey: "sk_test_123",
-      },
-    });
+  const propagateVS = (connections: any) => {
+    const vectorStore = new MemoryVectorStore(
+      new OpenAIEmbeddings({
+        configuration: {
+          baseURL: "http://localhost:1234/v1",
+          apiKey: "sk_test_123",
+        },
+      })
+    );
 
     const payload = {
-      LLM: model,
+      vectorStore: vectorStore,
     };
 
     connections?.forEach((connection: any) => {
@@ -68,13 +61,13 @@ export default memo(({ id, data }: NodeComponentProps) => {
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUrlEndpoint(event.target.value);
-    propagateLLMModel(LLMOutputConnections);
+    propagateVS(LLMOutputConnections);
   };
 
   return (
     <Node>
       <NodeHeader
-        title="LM Studio Model"
+        title="Vetor Store"
         imgSrc="https://ignos.blog/wp-content/uploads/2024/01/lm-studio-logo.png"
       />
 
@@ -92,18 +85,6 @@ export default memo(({ id, data }: NodeComponentProps) => {
           />
         </div>
 
-        <div className="flex flex-col gap-1 mt-2">
-          <div className="flex items-center">
-            <div className="font-bold text-sm">Prompt</div>
-          </div>
-
-          <Input
-            className="w-full h-[25px]"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Your prompt goes here"
-          />
-        </div>
       </NodeBody>
 
       <NodeOutputHandles handles={outputHandles} />

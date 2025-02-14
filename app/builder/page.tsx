@@ -21,9 +21,10 @@ import LLMNode from "./LLMNode";
 import OutputNode from "./OutputNode";
 import { Button } from "@/components/ui/button";
 import { Play, Save, StarIcon } from "lucide-react";
+import BabyAGINode from "./BabyAGINode";
+import VectorStoreNode from "./VectorStoreNode";
 
 const initialEdges: any[] = [
-  { id: "e1-2", source: "1", target: "2", type: "default" },
 ];
 
 const initialNodes = [
@@ -38,15 +39,14 @@ const initialNodes = [
     id: "3",
     data: {},
     position: { x: 600, y: 400 },
-    type: "outputNode",
+    type: "vectorStoreNode",
   },
   {
     id: "4",
     data: {},
     position: { x: 600, y: 800 },
-    type: "outputNode",
+    type: "babyAGINode",
   },
-
 ];
 
 function Flow() {
@@ -115,24 +115,16 @@ function Flow() {
   }, [isEditedUnsaved]); // Only depend on `isEditedUnsaved`
 
   useEffect(() => {
-    console.log("Change detected");
     setIsEditedUnsaved(true);
-    console.log(edges);
-    console.log(nodes);
   }, [edges, nodes]);
 
   const save = () => {
-    console.log("Change saved");
     localStorage.setItem("nodes", JSON.stringify(nodes));
     localStorage.setItem("edges", JSON.stringify(edges));
     setIsEditedUnsaved(false);
 
     toast.success("Success", {
       description: "Your changes have been saved.",
-      // action: {
-      //   label: "Undo",
-      //   onClick: () => console.log("Undo"),
-      // },
     });
   };
 
@@ -147,7 +139,7 @@ function Flow() {
     }
   };
 
-  const isValidConnection = useCallback(
+  const preventCycles = useCallback(
     (connection: { target: any; source: any }) => {
       // we are using getNodes and getEdges helpers here
       // to make sure we create isValidConnection function only once
@@ -176,28 +168,9 @@ function Flow() {
   const nodeTypes = {
     llmNode: LLMNode,
     outputNode: OutputNode,
+    babyAGINode: BabyAGINode,
+    vectorStoreNode: VectorStoreNode
   };
-
-  const [events, setEvents] = useState({
-    onReconnectStart: false,
-    onConnectStart: false,
-    onConnect: false,
-    onReconnect: false,
-    onConnectEnd: false,
-    onReconnectEnd: false,
-  });
-
-  const onConnectStart = useCallback((params: any) => {
-    console.log("onConnectStart", params);
-    setEvents((events) => ({
-      ...events,
-      onConnectStart: true,
-      onConnect: false,
-      onReconnect: false,
-      onConnectEnd: false,
-      onReconnectEnd: false,
-    }));
-  }, []);
 
   const start = () => {
     updateNodeData("1", { start: true });
@@ -230,8 +203,7 @@ function Flow() {
         onReconnect={onReconnect}
         onReconnectStart={onReconnectStart}
         onReconnectEnd={onReconnectEnd}
-        isValidConnection={isValidConnection}
-        onConnectStart={onConnectStart}
+        isValidConnection={preventCycles}
         fitView
         minZoom={0.1}
         nodeTypes={nodeTypes}
