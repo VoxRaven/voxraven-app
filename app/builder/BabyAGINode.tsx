@@ -99,7 +99,10 @@ export default memo(({ id, data }: NodeComponentProps) => {
 
     const out = await babyAGI.invoke({
       objective: prompt,
-    });
+    },
+  {
+    
+  });
 
     console.log(out)
 
