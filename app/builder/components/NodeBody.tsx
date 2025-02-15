@@ -1,4 +1,16 @@
+import { Badge } from "@/components/ui/badge";
 import React from "react";
+import { CircleIcon, ServerIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface NodeBodyProps {
   children: React.ReactNode;
@@ -6,12 +18,7 @@ interface NodeBodyProps {
 
 // Parent component that accepts children
 const NodeBody: React.FC<NodeBodyProps> = ({ children }) => {
-  return (
-    <>
-       <div className="text-center py-1 bg-slate-100 text-xs">Configuration</div>
-      <div className="mx-2 my-4">{children}</div>
-    </>
-  );
+  return <CardContent className="space-y-4 min-w-72">{children}</CardContent>;
 };
 
 export default NodeBody;

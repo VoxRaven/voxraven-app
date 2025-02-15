@@ -13,6 +13,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
+import { ChevronsRight, CircleChevronRight } from "lucide-react";
 
 export interface NodeHandlesProps {
   handles: Array<CustomHandleProps>;
@@ -65,14 +67,22 @@ const CustomHandle = ({
 
   return (
     <div
-      className={`relative my-2 ${
+      className={`relative my-1 ${
         position === Position.Right ? "text-end" : ""
       }`}
     >
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>
-            <span className="mx-2 text-xs italic">{label}</span>
+            <Badge
+              variant="outline"
+              className="mx-2 font-light flex flex-row gap-1 px-1"
+            >
+              {position === Position.Left && <ChevronsRight size={12} />}
+              <span>{label}</span>
+              {position === Position.Right && <ChevronsRight size={12} />}
+            </Badge>
+
             <Handle
               type={type as HandleType}
               position={position}
@@ -140,8 +150,7 @@ export const NodeHandles = ({ handles }: NodeHandlesProps) => {
 
 export const NodeInputHandles = ({ handles }: NodeInputHandlesProps) => {
   return (
-    <div className="flex flex-col">
-      <div className="text-center py-1 bg-slate-100 text-xs">Inputs</div>
+    <div className="flex flex-col mb-2">
       {handles.map((item, index) => (
         <InputHandle
           label={item.label}
@@ -155,8 +164,7 @@ export const NodeInputHandles = ({ handles }: NodeInputHandlesProps) => {
 
 export const NodeOutputHandles = ({ handles }: NodeOutputHandlesProps) => {
   return (
-    <div className="flex flex-col">
-      <div className="text-center py-1 bg-slate-100 text-xs">Outputs</div>
+    <div className="flex flex-col mb-2">
       {handles.map((item, index) => (
         <OutputHandle
           label={item.label}

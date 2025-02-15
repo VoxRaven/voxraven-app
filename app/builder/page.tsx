@@ -23,9 +23,9 @@ import { Button } from "@/components/ui/button";
 import { Play, Save, StarIcon } from "lucide-react";
 import BabyAGINode from "./BabyAGINode";
 import VectorStoreNode from "./VectorStoreNode";
+import PromptNode from "./PromptNode";
 
-const initialEdges: any[] = [
-];
+const initialEdges: any[] = [];
 
 const initialNodes = [
   { id: "1", position: { x: 0, y: 0 }, data: { label: "1" }, type: "llmNode" },
@@ -47,11 +47,23 @@ const initialNodes = [
     position: { x: 600, y: 800 },
     type: "babyAGINode",
   },
+  {
+    id: "5",
+    data: {},
+    position: { x: 600, y: 1200 },
+    type: "promptNode",
+  },
+  {
+    id: "6",
+    data: {},
+    position: { x: 600, y: 100 },
+    type: "outputNode",
+  },
 ];
 
 function Flow() {
   const edgeReconnectSuccessful = useRef(true);
-  const { updateNodeData } = useReactFlow();
+  const { updateNodeData, screenToFlowPosition } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
 
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -169,16 +181,41 @@ function Flow() {
     llmNode: LLMNode,
     outputNode: OutputNode,
     babyAGINode: BabyAGINode,
-    vectorStoreNode: VectorStoreNode
+    vectorStoreNode: VectorStoreNode,
+    promptNode: PromptNode,
   };
 
   const start = () => {
     updateNodeData("1", { start: true });
   };
 
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    console.log("Dragged over");
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const position = screenToFlowPosition({
+      x: e.clientX,
+      y: e.clientY,
+    });
+
+    setNodes((nodes) => [
+      ...nodes,
+      {
+        id: "7",
+        data: {},
+        position: position,
+        type: "outputNode",
+      },
+    ]);
+    console.log("Dropped");
+  };
+
   return (
     <div className="h-full border border-slate-150 rounded-md">
-      <div className="absolute z-10 flex flex-row gap-2 p-2 m-2 ">
+      {/* <div className="absolute z-10 flex flex-row gap-2 p-2 m-2 ">
         <Button
           className="rounded-full bg-green-500 hover:bg-green-300 w-20"
           size="icon"
@@ -193,6 +230,12 @@ function Flow() {
         >
           <Save /> Save
         </Button>
+      </div> */}
+      <div>
+        <div
+          draggable
+          className="w-0 h-0 border-l-[30px] border-l-transparent border-b-[50px] border-b-yellow-500 border-r-[30px] border-r-transparent"
+        />
       </div>
       <ReactFlow
         nodes={nodes}
@@ -207,6 +250,8 @@ function Flow() {
         fitView
         minZoom={0.1}
         nodeTypes={nodeTypes}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
         defaultEdgeOptions={{
           markerEnd: {
             type: MarkerType.ArrowClosed,

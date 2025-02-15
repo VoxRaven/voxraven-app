@@ -15,6 +15,11 @@ import NodeBody from "./components/NodeBody";
 import { Node, NodeComponentProps } from "./components/Node";
 import { NodeOutputHandles } from "./components/NodeHandles";
 import NodeDataTypes from "./components/NodeDataTypes";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { ServerIcon } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 type LLMOutput = {
   content?: string;
@@ -71,6 +76,26 @@ export default memo(({ id, data }: NodeComponentProps) => {
     propagateLLMModel(LLMOutputConnections);
   };
 
+  const checkEndpoint = () => {
+    fetch(urlEndpoint + "/models")
+      .then((response) => {
+        if (response.status === 200) {
+          toast.success("Success", {
+            description: "Endpoint is reachable",
+          });
+        } else {
+          toast.error("Failed", {
+            description: "Endpoint is not reachable",
+          });
+        }
+      })
+      .catch((error) => {
+        toast.error("Failed", {
+          description: error,
+        });
+      });
+  };
+
   return (
     <Node>
       <NodeHeader
@@ -79,30 +104,19 @@ export default memo(({ id, data }: NodeComponentProps) => {
       />
 
       <NodeBody>
-        <div className="flex flex-col gap-1 mt-2">
-          <div className="relative">
-            <div className="font-bold text-sm">Endpoint</div>
+        <div className="space-y-2">
+          <Label htmlFor="endpoint">Endpoint</Label>
+          <div className="flex gap-2">
+            <Input
+              id="endpoint"
+              value={urlEndpoint}
+              onChange={handleInputChange}
+              placeholder="Endpoint /v1/models"
+            />
+            <Button variant="outline" size="icon" onClick={checkEndpoint}>
+              <ServerIcon className="h-4 w-4" />
+            </Button>
           </div>
-
-          <Input
-            className="w-full h-[25px]"
-            value={urlEndpoint}
-            onChange={handleInputChange}
-            placeholder="Endpoint /v1/models"
-          />
-        </div>
-
-        <div className="flex flex-col gap-1 mt-2">
-          <div className="flex items-center">
-            <div className="font-bold text-sm">Prompt</div>
-          </div>
-
-          <Input
-            className="w-full h-[25px]"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Your prompt goes here"
-          />
         </div>
       </NodeBody>
 

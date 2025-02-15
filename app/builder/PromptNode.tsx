@@ -17,7 +17,7 @@ import NodeDataTypes from "./components/NodeDataTypes";
 
 import { BabyAGI } from "langchain/experimental/babyagi";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
-import { OpenAIEmbeddings, OpenAI } from "@langchain/openai";
+import { OpenAIEmbeddings, OpenAI, ChatOpenAI } from "@langchain/openai";
 import { stringify } from "querystring";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -36,18 +36,13 @@ const MarkdownRenderer: React.FC<MarkdownProps> = ({ content }) => {
 };
 
 export default memo(({ id, data }: NodeComponentProps) => {
-  const [LLM, setLLM] = useState();
-  const [vectorStore, setVectorStore] = useState();
-  const [hasLLM, setHasLLM] = useState(false);
+  const [LLM, setLLM] = useState<ChatOpenAI>();
+  const [prompt, setPrompt] = useState("");
 
   const inputHandles = [
     {
       label: "LLM",
       acceptedType: NodeDataTypes.LLM,
-    },
-    {
-      label: "Vector Store",
-      acceptedType: NodeDataTypes.VectorStore,
     },
   ];
 
@@ -63,20 +58,10 @@ export default memo(({ id, data }: NodeComponentProps) => {
   }, [data]);
 
   useEffect(() => {
-    setLLM(data.LLM);
-    if (data.LLM) {
-      setHasLLM(true);
-    } else {
-      setHasLLM(false);
-    }
+    setLLM(data.LLM as ChatOpenAI);
   }, [data.LLM]);
 
-  useEffect(() => {
-    setVectorStore(data.vectorStore);
-  }, [data.vectorStore]);
-
   const { updateNodeData, getNode } = useReactFlow();
-  const [prompt, setPrompt] = useState("");
 
   const LLMOutputConnections = useNodeConnections({
     id: id,
@@ -85,26 +70,16 @@ export default memo(({ id, data }: NodeComponentProps) => {
   });
 
   const run = async () => {
-    const babyAGI = BabyAGI.fromLLM({
-      llm: LLM!,
-      vectorstore: vectorStore!,
-      maxIterations: 1,
-    });
-
     let payload = {
       content: "",
       thinking: true,
     };
     propagateLLMModel(LLMOutputConnections, payload);
 
-    const out = await babyAGI.invoke({
-      objective: prompt,
-    });
-
-    console.log(out)
+    const out = await LLM?.invoke(prompt);
 
     payload = {
-      content: stringify(out),
+      content: out?.content.toString() || "",
       thinking: false,
     };
     propagateLLMModel(LLMOutputConnections, payload);
@@ -119,15 +94,15 @@ export default memo(({ id, data }: NodeComponentProps) => {
   return (
     <Node>
       <NodeHeader
-        title="Baby AGI"
-        imgSrc="https://sprout24.com/hub/wp-content/uploads/sites/2/2024/08/babyagi-600x600.png"
+        title="Prompt Node"
+        imgSrc="https://static.thenounproject.com/png/5249626-200.png"
       />
 
       <NodeInputHandles handles={inputHandles} />
 
       <NodeBody>
         <div className="space-y-2">
-          <Label htmlFor="prompt">Objective</Label>
+          <Label htmlFor="prompt">Prompt</Label>
           <Textarea
             id="prompt"
             placeholder="Your prompt goes here"

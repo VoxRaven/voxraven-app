@@ -6,6 +6,7 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 import NodeHeader from "./components/NodeHeader";
 
@@ -16,6 +17,9 @@ import { Node, NodeComponentProps } from "./components/Node";
 import { NodeOutputHandles } from "./components/NodeHandles";
 import NodeDataTypes from "./components/NodeDataTypes";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { ServerIcon } from "lucide-react";
 
 export default memo(({ id, data }: NodeComponentProps) => {
   const { updateNodeData, getNode } = useReactFlow();
@@ -64,6 +68,26 @@ export default memo(({ id, data }: NodeComponentProps) => {
     propagateVS(LLMOutputConnections);
   };
 
+  const checkEndpoint = () => {
+    fetch(urlEndpoint + "/models")
+      .then((response) => {
+        if (response.status === 200) {
+          toast.success("Success", {
+            description: "Endpoint is reachable",
+          });
+        } else {
+          toast.error("Failed", {
+            description: "Endpoint is not reachable",
+          });
+        }
+      })
+      .catch((error) => {
+        toast.error("Failed", {
+          description: error,
+        });
+      });
+  };
+
   return (
     <Node>
       <NodeHeader
@@ -72,19 +96,20 @@ export default memo(({ id, data }: NodeComponentProps) => {
       />
 
       <NodeBody>
-        <div className="flex flex-col gap-1 mt-2">
-          <div className="relative">
-            <div className="font-bold text-sm">Endpoint</div>
+        <div className="space-y-2">
+          <Label htmlFor="endpoint">Endpoint</Label>
+          <div className="flex gap-2">
+            <Input
+              id="endpoint"
+              value={urlEndpoint}
+              onChange={handleInputChange}
+              placeholder="Endpoint /v1/models"
+            />
+            <Button variant="outline" size="icon" onClick={checkEndpoint}>
+              <ServerIcon className="h-4 w-4" />
+            </Button>
           </div>
-
-          <Input
-            className="w-full h-[25px]"
-            value={urlEndpoint}
-            onChange={handleInputChange}
-            placeholder="Endpoint /v1/models"
-          />
         </div>
-
       </NodeBody>
 
       <NodeOutputHandles handles={outputHandles} />
